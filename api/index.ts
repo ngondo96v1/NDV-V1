@@ -16,19 +16,15 @@ const isValidUrl = (url: string) => {
 };
 
 const isPlaceholder = (val: string) => 
-  !val || val.includes("your-project-id") || val.includes("your-service-role-key");
-
-if (!SUPABASE_URL || !SUPABASE_KEY || !isValidUrl(SUPABASE_URL) || isPlaceholder(SUPABASE_URL) || isPlaceholder(SUPABASE_KEY)) {
-  console.error("CRITICAL ERROR: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing, invalid, or using placeholder values.");
-}
+  !val || val.includes("your-project-id") || val.includes("your-service-role-key") || val === "https://your-project-id.supabase.co";
 
 const supabase = (() => {
   try {
-    if (SUPABASE_URL && SUPABASE_KEY && isValidUrl(SUPABASE_URL)) {
+    if (SUPABASE_URL && SUPABASE_KEY && isValidUrl(SUPABASE_URL) && !isPlaceholder(SUPABASE_URL) && !isPlaceholder(SUPABASE_KEY)) {
       console.log("Initializing Supabase client with URL:", SUPABASE_URL);
       return createClient(SUPABASE_URL, SUPABASE_KEY);
     }
-    console.warn("Supabase credentials missing or invalid URL.");
+    console.warn("Supabase credentials missing, invalid, or using placeholders.");
     return null;
   } catch (e) {
     console.error("Failed to initialize Supabase client:", e);
@@ -155,17 +151,10 @@ router.get("/supabase-status", async (req, res) => {
 router.get("/data", async (req, res) => {
   try {
     if (!supabase) {
-      return res.json({
-        users: [],
-        loans: [],
-        notifications: [],
-        budget: 30000000,
-        rankProfit: 0,
-        loanProfit: 0,
-        monthlyStats: [],
-        storageFull: false,
-        storageUsage: "0.00",
-        warning: "Supabase chưa được cấu hình"
+      console.error("Supabase client not initialized. Check environment variables.");
+      return res.status(500).json({
+        error: "Cấu hình Supabase không hợp lệ",
+        message: "Hệ thống chưa được cấu hình Supabase URL hoặc Service Role Key. Vui lòng thiết lập biến môi trường trong AI Studio."
       });
     }
 
@@ -261,7 +250,10 @@ router.get("/data", async (req, res) => {
     });
   } catch (e: any) {
     console.error("Lỗi nghiêm trọng trong /api/data:", e);
-    res.status(500).json({ error: "Internal Server Error", message: e.message });
+    res.status(500).json({ 
+      error: "Lỗi hệ thống", 
+      message: e.message || "Đã xảy ra lỗi không xác định khi truy xuất dữ liệu từ Supabase. Vui lòng kiểm tra lại bảng và quyền truy cập." 
+    });
   }
 });
 
