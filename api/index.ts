@@ -34,7 +34,7 @@ const supabase = (() => {
 
 const STORAGE_LIMIT_MB = 45; // Virtual limit for demo purposes
 
-const router = express.Router();
+const router = express();
 
 router.use(cors());
 router.use(express.json({ limit: '50mb' }));
@@ -154,7 +154,7 @@ router.get("/data", async (req, res) => {
       console.error("Supabase client not initialized. Check environment variables.");
       return res.status(500).json({
         error: "Cấu hình Supabase không hợp lệ",
-        message: "Hệ thống chưa được cấu hình Supabase URL hoặc Service Role Key. Vui lòng thiết lập biến môi trường trong AI Studio."
+        message: "Hệ thống chưa được cấu hình Supabase URL hoặc Service Role Key. Vui lòng thiết lập biến môi trường trong cài đặt dự án (AI Studio hoặc Vercel Dashboard)."
       });
     }
 
