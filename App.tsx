@@ -156,14 +156,15 @@ const App: React.FC = () => {
         if (!isMounted) return;
         
         // Use functional updates and deep comparison to avoid unnecessary re-renders
-        if (data.loans) {
+        // CRITICAL: Skip updates if an action is in progress to prevent "state reversion"
+        if (data.loans && !isProcessingRef.current) {
           setLoans(prevLoans => {
             if (JSON.stringify(prevLoans) === JSON.stringify(data.loans)) return prevLoans;
             return data.loans;
           });
         }
 
-        if (data.users) {
+        if (data.users && !isProcessingRef.current) {
           setRegisteredUsers(prevUsers => {
             if (JSON.stringify(prevUsers) === JSON.stringify(data.users)) return prevUsers;
             return data.users;
@@ -177,16 +178,16 @@ const App: React.FC = () => {
           });
         }
 
-        if (data.budget !== undefined && data.budget !== systemBudget) {
+        if (data.budget !== undefined && data.budget !== systemBudget && !isProcessingRef.current) {
           setSystemBudget(data.budget);
         }
-        if (data.rankProfit !== undefined && data.rankProfit !== rankProfit) {
+        if (data.rankProfit !== undefined && data.rankProfit !== rankProfit && !isProcessingRef.current) {
           setRankProfit(data.rankProfit);
         }
-        if (data.loanProfit !== undefined && data.loanProfit !== loanProfit) {
+        if (data.loanProfit !== undefined && data.loanProfit !== loanProfit && !isProcessingRef.current) {
           setLoanProfit(data.loanProfit);
         }
-        if (data.monthlyStats !== undefined) {
+        if (data.monthlyStats !== undefined && !isProcessingRef.current) {
           const limitedStats = [...data.monthlyStats].slice(0, 6);
           setMonthlyStats(limitedStats);
         }

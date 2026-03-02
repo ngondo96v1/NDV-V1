@@ -296,7 +296,8 @@ const AdminUserManagement: React.FC<AdminUserManagementProps> = ({ users, loans,
                            </div>
                            <div className="grid grid-cols-2 gap-3">
                               <button 
-                                onClick={async () => {
+                                onClick={async (e) => {
+                                  e.stopPropagation();
                                   if (isGlobalProcessing) return;
                                   await onAction(u.id, 'APPROVE_RANK');
                                 }} 
@@ -306,7 +307,8 @@ const AdminUserManagement: React.FC<AdminUserManagementProps> = ({ users, loans,
                                 {isGlobalProcessing ? 'Đang xử lý...' : 'Duyệt hạng'}
                               </button>
                               <button 
-                                onClick={async () => {
+                                onClick={async (e) => {
+                                  e.stopPropagation();
                                   if (isGlobalProcessing) return;
                                   await onAction(u.id, 'REJECT_RANK');
                                 }} 
@@ -464,7 +466,8 @@ const AdminUserManagement: React.FC<AdminUserManagementProps> = ({ users, loans,
                                       <div className="flex flex-col gap-1.5 w-full">
                                         <div className="flex gap-1.5">
                                           <button 
-                                            onClick={async () => {
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
                                               if (isGlobalProcessing) return;
                                               await onLoanAction(loan.id, 'APPROVE');
                                             }} 
@@ -474,7 +477,10 @@ const AdminUserManagement: React.FC<AdminUserManagementProps> = ({ users, loans,
                                             {isGlobalProcessing ? 'Đang xử lý...' : 'Duyệt vay'}
                                           </button>
                                           <button 
-                                            onClick={() => setRejectingLoanId(rejectingLoanId === loan.id ? null : loan.id)} 
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setRejectingLoanId(rejectingLoanId === loan.id ? null : loan.id);
+                                            }} 
                                             disabled={isGlobalProcessing}
                                             className={`flex-1 py-3 rounded-lg font-black text-[9px] uppercase active:scale-95 transition-all flex items-center justify-center gap-1.5 ${rejectingLoanId === loan.id ? 'bg-red-600 text-white' : 'bg-white/5 border border-white/10 text-red-500'} ${isGlobalProcessing ? 'opacity-50' : ''}`}
                                           >
@@ -486,7 +492,8 @@ const AdminUserManagement: React.FC<AdminUserManagementProps> = ({ users, loans,
                                             {["Hồ sơ không đạt", "Thông tin sai lệch", "Nợ xấu hệ thống", "Vượt quá hạn mức"].map((reason) => (
                                               <button 
                                                 key={reason}
-                                                onClick={async () => { 
+                                                onClick={async (e) => { 
+                                                  e.stopPropagation();
                                                   if (isGlobalProcessing) return;
                                                   await onLoanAction(loan.id, 'REJECT', reason); 
                                                   setRejectingLoanId(null); 
@@ -503,7 +510,8 @@ const AdminUserManagement: React.FC<AdminUserManagementProps> = ({ users, loans,
                                     )}
                                     {loan.status === 'ĐÃ DUYỆT' && (
                                       <button 
-                                        onClick={async () => {
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
                                           if (isGlobalProcessing) return;
                                           await onLoanAction(loan.id, 'DISBURSE');
                                         }} 
@@ -517,7 +525,8 @@ const AdminUserManagement: React.FC<AdminUserManagementProps> = ({ users, loans,
                                       <div className="flex flex-col gap-1.5 w-full">
                                         <div className="flex gap-1.5">
                                           <button 
-                                            onClick={async () => {
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
                                               if (isGlobalProcessing) return;
                                               await onLoanAction(loan.id, 'SETTLE');
                                             }} 
@@ -527,7 +536,10 @@ const AdminUserManagement: React.FC<AdminUserManagementProps> = ({ users, loans,
                                             <CheckCircle2 size={12} /> {isGlobalProcessing ? 'Đang xử lý...' : 'Duyệt bill'}
                                           </button>
                                           <button 
-                                            onClick={() => setRejectingLoanId(rejectingLoanId === loan.id ? null : loan.id)} 
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setRejectingLoanId(rejectingLoanId === loan.id ? null : loan.id);
+                                            }} 
                                             disabled={isGlobalProcessing}
                                             className={`flex-1 py-3 rounded-lg font-black text-[9px] uppercase active:scale-95 transition-all flex items-center justify-center gap-1.5 ${rejectingLoanId === loan.id ? 'bg-red-600 text-white' : 'bg-white/5 border border-white/10 text-red-500'} ${isGlobalProcessing ? 'opacity-50' : ''}`}
                                           >
@@ -539,7 +551,8 @@ const AdminUserManagement: React.FC<AdminUserManagementProps> = ({ users, loans,
                                             {["Bill không hợp lệ", "Sai nội dung", "Sai số tiền", "Ảnh mờ/Lỗi"].map((reason) => (
                                               <button 
                                                 key={reason}
-                                                onClick={async () => { 
+                                                onClick={async (e) => { 
+                                                  e.stopPropagation();
                                                   if (isGlobalProcessing) return;
                                                   await onLoanAction(loan.id, 'REJECT', reason); 
                                                   setRejectingLoanId(null); 
