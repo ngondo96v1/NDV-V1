@@ -34,7 +34,7 @@ const supabase = (() => {
 
 const STORAGE_LIMIT_MB = 45; // Virtual limit for demo purposes
 
-const router = express();
+const router = express.Router();
 
 router.use(cors());
 router.use(express.json({ limit: '50mb' }));
@@ -458,8 +458,12 @@ router.post("/sync", async (req, res) => {
 
 // 404 handler for API routes
 router.use((req, res) => {
-  res.status(404).json({ error: `API route not found: ${req.method} ${req.originalUrl}` });
+  res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
 });
 
-// Export the router directly
-export default router;
+const app = express();
+app.use("/api", router);
+app.use("/", router);
+
+// Export the app
+export default app;
