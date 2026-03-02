@@ -451,11 +451,6 @@ const App: React.FC = () => {
       setCurrentView(AppView.DASHBOARD);
       setShowBankWarning(true);
 
-      // Chuyển sang Zalo sau khi đăng ký thành công
-      setTimeout(() => {
-        window.location.assign('https://zalo.me/g/escncv086');
-      }, 1500);
-
       // Persist to server
       await fetch('/api/users', {
         method: 'POST',
