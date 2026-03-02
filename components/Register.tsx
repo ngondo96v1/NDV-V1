@@ -20,7 +20,7 @@ import { compressImage } from '../utils';
 
 interface RegisterProps {
   onBack: () => void;
-  onRegister: (userData: Partial<UserType>) => void;
+  onRegister: (userData: Partial<UserType>) => Promise<void> | void;
   onClearError?: () => void;
   error?: string | null;
 }
@@ -47,13 +47,6 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, onClearError, e
   const [idBack, setIdBack] = useState<string | null>(null);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Reset isSubmitting when error changes
-  React.useEffect(() => {
-    if (error) {
-      setIsSubmitting(false);
-    }
-  }, [error]);
 
   const fileInputRefFront = useRef<HTMLInputElement>(null);
   const fileInputRefBack = useRef<HTMLInputElement>(null);
@@ -99,21 +92,25 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, onClearError, e
     }
   };
 
-  const handleConfirmRegister = () => {
+  const handleConfirmRegister = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-    onRegister({
-      phone: formData.zaloPhone,
-      fullName: formData.fullName,
-      idNumber: formData.idNumber,
-      address: formData.address,
-      password: formData.password,
-      refZalo: formData.refZalo,
-      relationship: formData.relationship,
-      idFront: idFront!,
-      idBack: idBack!
-    });
-    setShowConfirmPopup(false);
+    try {
+      await onRegister({
+        phone: formData.zaloPhone,
+        fullName: formData.fullName,
+        idNumber: formData.idNumber,
+        address: formData.address,
+        password: formData.password,
+        refZalo: formData.refZalo,
+        relationship: formData.relationship,
+        idFront: idFront!,
+        idBack: idBack!
+      });
+    } finally {
+      setIsSubmitting(false);
+      setShowConfirmPopup(false);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, side: 'front' | 'back') => {
