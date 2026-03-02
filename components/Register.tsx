@@ -21,10 +21,11 @@ import { compressImage } from '../utils';
 interface RegisterProps {
   onBack: () => void;
   onRegister: (userData: Partial<UserType>) => void;
+  onClearError?: () => void;
   error?: string | null;
 }
 
-const Register: React.FC<RegisterProps> = ({ onBack, onRegister, error }) => {
+const Register: React.FC<RegisterProps> = ({ onBack, onRegister, onClearError, error }) => {
   const [formData, setFormData] = useState({
     fullName: '',
     idNumber: '',
@@ -46,6 +47,13 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, error }) => {
   const [idBack, setIdBack] = useState<string | null>(null);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Reset isSubmitting when error changes
+  React.useEffect(() => {
+    if (error) {
+      setIsSubmitting(false);
+    }
+  }, [error]);
 
   const fileInputRefFront = useRef<HTMLInputElement>(null);
   const fileInputRefBack = useRef<HTMLInputElement>(null);
@@ -165,7 +173,10 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, error }) => {
             placeholder="HỌ VÀ TÊN (IN HOA)"
             className="w-full bg-[#16161a] border border-white/5 rounded-xl py-3.5 pl-10 pr-3.5 text-[11px] font-bold text-white placeholder-gray-600 focus:outline-none focus:border-orange-500/30"
             value={formData.fullName}
-            onChange={(e) => setFormData({...formData, fullName: e.target.value.toUpperCase()})}
+            onChange={(e) => {
+              setFormData({...formData, fullName: e.target.value.toUpperCase()});
+              if (error) onClearError?.();
+            }}
           />
         </div>
 
@@ -181,7 +192,10 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, error }) => {
               className={`w-full bg-[#16161a] border rounded-xl py-3.5 pl-9 pr-3.5 text-[11px] font-bold text-white placeholder-gray-600 focus:outline-none transition-all ${tooltips.idNumber ? 'border-red-500' : 'border-white/5 focus:border-orange-500/30'}`}
               value={formData.idNumber}
               onBlur={() => handleBlur('idNumber')}
-              onChange={(e) => setFormData({...formData, idNumber: e.target.value.replace(/\D/g, '').slice(0, 12)})}
+              onChange={(e) => {
+                setFormData({...formData, idNumber: e.target.value.replace(/\D/g, '').slice(0, 12)});
+                if (error) onClearError?.();
+              }}
             />
             {tooltips.idNumber && (
               <div className="absolute -top-7 left-0 right-0 z-20">
@@ -203,7 +217,10 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, error }) => {
               className={`w-full bg-[#16161a] border rounded-xl py-3.5 pl-12 pr-3.5 text-[11px] font-bold text-white placeholder-gray-600 focus:outline-none transition-all ${tooltips.zaloPhone ? 'border-red-500' : 'border-white/5 focus:border-orange-500/30'}`}
               value={formData.zaloPhone}
               onBlur={() => handleBlur('zaloPhone')}
-              onChange={(e) => setFormData({...formData, zaloPhone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
+              onChange={(e) => {
+                setFormData({...formData, zaloPhone: e.target.value.replace(/\D/g, '').slice(0, 10)});
+                if (error) onClearError?.();
+              }}
             />
             {tooltips.zaloPhone && (
               <div className="absolute -top-7 left-0 right-0 z-20">
@@ -225,7 +242,10 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, error }) => {
             placeholder="ĐỊA CHỈ THƯỜNG TRÚ"
             className="w-full bg-[#16161a] border border-white/5 rounded-xl py-3.5 pl-10 pr-3.5 text-[11px] font-bold text-white placeholder-gray-600 focus:outline-none focus:border-orange-500/30"
             value={formData.address}
-            onChange={(e) => setFormData({...formData, address: e.target.value})}
+            onChange={(e) => {
+              setFormData({...formData, address: e.target.value});
+              if (error) onClearError?.();
+            }}
           />
         </div>
 
@@ -240,7 +260,10 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, error }) => {
               className={`w-full bg-[#16161a] border rounded-xl py-3.5 pl-9 pr-9 text-[11px] font-bold text-white placeholder-gray-600 focus:outline-none transition-all ${tooltips.password ? 'border-red-500' : 'border-white/5 focus:border-orange-500/30'}`}
               value={formData.password}
               onBlur={() => handleBlur('password')}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              onChange={(e) => {
+                setFormData({...formData, password: e.target.value});
+                if (error) onClearError?.();
+              }}
             />
             <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-600">
               {showPass ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -261,7 +284,10 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, error }) => {
               className={`w-full bg-[#16161a] border rounded-xl py-3.5 px-9 text-[11px] font-bold text-white placeholder-gray-600 focus:outline-none transition-all ${tooltips.confirmPassword ? 'border-red-500' : 'border-white/5 focus:border-orange-500/30'}`}
               value={formData.confirmPassword}
               onBlur={() => handleBlur('confirmPassword')}
-              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+              onChange={(e) => {
+                setFormData({...formData, confirmPassword: e.target.value});
+                if (error) onClearError?.();
+              }}
             />
             <button type="button" onClick={() => setShowConfirmPass(!showConfirmPass)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-600">
               {showConfirmPass ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -289,7 +315,10 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, error }) => {
               className={`w-full bg-[#16161a] border rounded-xl py-3.5 pl-14 pr-3.5 text-[11px] font-bold text-white placeholder-gray-600 focus:outline-none transition-all ${tooltips.refZalo ? 'border-red-500' : 'border-white/5 focus:border-orange-500/30'}`}
               value={formData.refZalo}
               onBlur={() => handleBlur('refZalo')}
-              onChange={(e) => setFormData({...formData, refZalo: e.target.value.replace(/\D/g, '').slice(0, 10)})}
+              onChange={(e) => {
+                setFormData({...formData, refZalo: e.target.value.replace(/\D/g, '').slice(0, 10)});
+                if (error) onClearError?.();
+              }}
             />
             {tooltips.refZalo && (
               <div className="absolute -top-7 left-0 right-0 z-20">
@@ -307,7 +336,10 @@ const Register: React.FC<RegisterProps> = ({ onBack, onRegister, error }) => {
             <select
               className="w-full bg-[#16161a] border border-white/5 rounded-xl py-3.5 px-3.5 text-[11px] font-bold text-white appearance-none focus:outline-none focus:border-orange-500/30"
               value={formData.relationship}
-              onChange={(e) => setFormData({...formData, relationship: e.target.value})}
+              onChange={(e) => {
+                setFormData({...formData, relationship: e.target.value});
+                if (error) onClearError?.();
+              }}
             >
               <option value="" disabled className="bg-black">MỐI QUAN HỆ</option>
               <option value="Vợ/Chồng" className="bg-black">Vợ/Chồng</option>

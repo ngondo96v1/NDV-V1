@@ -154,14 +154,21 @@ router.get("/data", async (req, res) => {
       console.error("Supabase client not initialized. Check environment variables.");
       return res.status(500).json({
         error: "Cấu hình Supabase không hợp lệ",
-        message: "Hệ thống chưa được cấu hình Supabase URL hoặc Service Role Key. Vui lòng thiết lập biến môi trường trong cài đặt dự án (AI Studio hoặc Vercel Dashboard)."
+        message: "Hệ thống chưa được cấu hình Supabase URL hoặc Service Role Key."
       });
     }
 
-    // Individual query functions with error handling
+    const userId = req.query.userId as string;
+    const isAdmin = req.query.isAdmin === 'true';
+
+    // Individual query functions with role-based filtering
     const fetchUsers = async () => {
       try {
-        const { data, error } = await supabase.from('users').select('*');
+        let query = supabase.from('users').select('*');
+        if (!isAdmin && userId) {
+          query = query.eq('id', userId);
+        }
+        const { data, error } = await query;
         if (error) throw error;
         return data || [];
       } catch (e) {
@@ -172,7 +179,11 @@ router.get("/data", async (req, res) => {
 
     const fetchLoans = async () => {
       try {
-        const { data, error } = await supabase.from('loans').select('*');
+        let query = supabase.from('loans').select('*');
+        if (!isAdmin && userId) {
+          query = query.eq('userId', userId);
+        }
+        const { data, error } = await query;
         if (error) throw error;
         return data || [];
       } catch (e) {
@@ -183,11 +194,11 @@ router.get("/data", async (req, res) => {
 
     const fetchNotifications = async () => {
       try {
-        // Limit notifications to last 100 to keep payload size manageable
-        const { data, error } = await supabase.from('notifications')
-          .select('*')
-          .order('id', { ascending: false })
-          .limit(100);
+        let query = supabase.from('notifications').select('*').order('id', { ascending: false });
+        if (!isAdmin && userId) {
+          query = query.eq('userId', userId);
+        }
+        const { data, error } = await query.limit(100);
         if (error) throw error;
         return data || [];
       } catch (e) {

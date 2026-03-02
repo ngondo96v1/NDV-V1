@@ -117,8 +117,14 @@ const App: React.FC = () => {
       const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
       try {
-        // Only check storage usage if user is admin to save resources
-        const url = user?.isAdmin ? '/api/data?checkStorage=true' : '/api/data';
+        const params = new URLSearchParams();
+        if (user) {
+          params.append('userId', user.id);
+          if (user.isAdmin) params.append('isAdmin', 'true');
+        }
+        if (user?.isAdmin) params.append('checkStorage', 'true');
+        
+        const url = `/api/data?${params.toString()}`;
         
         const response = await fetch(url, { signal: controller.signal });
         clearTimeout(timeout);
@@ -451,15 +457,18 @@ const App: React.FC = () => {
       setCurrentView(AppView.DASHBOARD);
       setShowBankWarning(true);
 
-      // Persist to server
-      await fetch('/api/users', {
+      // Background Sync
+      fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newUsers)
-      });
+      }).catch(err => console.error("Background sync error (register):", err));
+      
+      isProcessingRef.current = false;
+      setIsGlobalProcessing(false);
     } catch (e) {
       console.error("Lỗi lưu đăng ký:", e);
-    } finally {
+      setRegisterError("Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.");
       isProcessingRef.current = false;
       setIsGlobalProcessing(false);
     }
@@ -467,6 +476,8 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     setUser(null);
+    setLoginError(null);
+    setRegisterError(null);
     setCurrentView(AppView.LOGIN);
   };
 
@@ -524,8 +535,8 @@ const App: React.FC = () => {
       setUser(updatedUser);
       setRegisteredUsers(newRegisteredUsers);
 
-      // Persist to server and wait
-      await Promise.all([
+      // Background Sync - No await here to keep UI responsive
+      Promise.all([
         fetch('/api/loans', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -536,19 +547,20 @@ const App: React.FC = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newRegisteredUsers)
         })
-      ]);
+      ]).catch(err => console.error("Background sync error (loans):", err));
 
       // Chuyển sang Zalo nếu là khoản vay đầu tiên
       if (nextSeq === 1) {
-        // Sử dụng setTimeout để đảm bảo các state đã được cập nhật trước khi chuyển trang
-        // Và dùng window.location.assign để hoạt động tốt trên Safari
         setTimeout(() => {
           window.location.assign('https://zalo.me/g/escncv086');
         }, 800);
       }
+      
+      // Clear processing state early for better responsiveness
+      isProcessingRef.current = false;
+      setIsGlobalProcessing(false);
     } catch (e) {
       console.error("Lỗi lưu khoản vay:", e);
-    } finally {
       isProcessingRef.current = false;
       setIsGlobalProcessing(false);
     }
@@ -567,15 +579,17 @@ const App: React.FC = () => {
       setUser(updatedUser);
       setRegisteredUsers(newRegisteredUsers);
 
-      // Persist to server and wait
-      await fetch('/api/users', {
+      // Background Sync
+      fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newRegisteredUsers)
-      });
+      }).catch(err => console.error("Background sync error (upgrade):", err));
+      
+      isProcessingRef.current = false;
+      setIsGlobalProcessing(false);
     } catch (e) {
       console.error("Lỗi nâng hạng:", e);
-    } finally {
       isProcessingRef.current = false;
       setIsGlobalProcessing(false);
     }
@@ -593,15 +607,17 @@ const App: React.FC = () => {
 
       setLoans(newLoans);
 
-      // Persist to server and wait
-      await fetch('/api/loans', {
+      // Background Sync
+      fetch('/api/loans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newLoans)
-      });
+      }).catch(err => console.error("Background sync error (settle):", err));
+      
+      isProcessingRef.current = false;
+      setIsGlobalProcessing(false);
     } catch (e) {
       console.error("Lỗi tất toán:", e);
-    } finally {
       isProcessingRef.current = false;
       setIsGlobalProcessing(false);
     }
@@ -1013,7 +1029,7 @@ const App: React.FC = () => {
           onToggleRememberMe={setRememberMe}
         />
       );
-      case AppView.REGISTER: return <Register onBack={() => setCurrentView(AppView.LOGIN)} onRegister={handleRegister} error={registerError} />;
+      case AppView.REGISTER: return <Register onBack={() => setCurrentView(AppView.LOGIN)} onRegister={handleRegister} onClearError={() => setRegisterError(null)} error={registerError} />;
       case AppView.DASHBOARD: 
         return (
           <Dashboard 
