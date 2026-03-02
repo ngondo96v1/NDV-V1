@@ -18,6 +18,10 @@ async function startServer() {
   console.log(`Starting server in ${process.env.NODE_ENV || 'development'} mode`);
 
   app.use((req, res, next) => {
+    // Skip logging for static assets in development to reduce noise
+    if (process.env.NODE_ENV !== "production" && (req.url.endsWith(".tsx") || req.url.endsWith(".ts") || req.url.endsWith(".css") || req.url.includes("node_modules"))) {
+      return next();
+    }
     console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
     next();
   });
@@ -43,7 +47,12 @@ async function startServer() {
     console.log("Serving static files from dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+      const indexPath = path.join(distPath, "index.html");
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).send("Production build not found. Please run 'npm run build'.");
+      }
     });
   }
 
